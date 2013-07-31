@@ -5,15 +5,16 @@ debug = False
 
 def pschain(pid, psMap):
 	chain = [ pid ]
-	while pid != "1":
-		pid = psMap[pid]
-		chain.insert(0, pid)
+	while pid > "1":
+		pid = psMap.get(pid, "0")
+		if pid >= "1":
+			chain.insert(0, pid)
 	return chain
 
 def buildPsMap():
 	psCmd = 'ps -e -o pid= -o ppid='
 	ps = subprocess.Popen(psCmd, shell=True, stdout=subprocess.PIPE)
-	if debug:
+	if debug and False:
 		subprocess.call(psCmd + ' -o cmd', shell=True)
 	psMap = { }
 	for line in ps.stdout:
@@ -31,10 +32,16 @@ def getOriginalPids(params):
 		else:
 			i += 2
 	if not pids:
-		pids.add(str(os.getpid()))
+		#pids.add(str(os.getpid()))
+		ps = subprocess.Popen(['ps', '-o', 'pid='], stdout=subprocess.PIPE)
+		for e in ps.stdout:
+			pids.add(e.strip())
 	return pids
 
 def main():
+	global debug
+	if os.environ.get('DEBUG', None):
+		debug = True
 	params = sys.argv[1:]
 	originPids = getOriginalPids(params)
 	# build pschain for every pid
@@ -43,10 +50,16 @@ def main():
 	pidSet = set()
 	pidKey = []
 	for p in originPids:
+		if debug:
+			print "build pschain for pid:", p
 		# if p is someone's parent, skip
 		if p in pidSet:
-			continue
+			print "%5s = skip..." % p
+			if debug:
+				continue
 		chain = pschain(p, psMap)
+		if debug:
+			print "%5s = %s" % (p, str(chain))
 		# if someone is p's parent, delete
 		for k, v in chainMap.items():
 			if k in chain:
@@ -56,13 +69,11 @@ def main():
 		for e in chain:
 			pidSet.add(e)
 		pidKey.append(p)
-	# concat pids
-	pids = []
+	# build args
+	args = ['ps']
 	for k in pidKey:
-		for e in chainMap[k]:
-			pids.append(e)
-	pidStr = ','.join(pids)
-	args = ['ps', '-p', pidStr] + params
+		args += ['-p', ','.join(chainMap[k])]
+	args += params
 	if debug:
 		print "args =", args
 	subprocess.call(args)
