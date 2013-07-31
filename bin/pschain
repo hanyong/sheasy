@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+import sys, os, subprocess
+
+debug = False
+
+def pschain(pid, psMap):
+	chain = [ pid ]
+	while pid != "1":
+		pid = psMap[pid]
+		chain.insert(0, pid)
+	return chain
+
+def buildPsMap():
+	psCmd = 'ps -e -o pid= -o ppid='
+	ps = subprocess.Popen(psCmd, shell=True, stdout=subprocess.PIPE)
+	if debug:
+		subprocess.call(psCmd + ' -o cmd', shell=True)
+	psMap = { }
+	for line in ps.stdout:
+		pid, ppid = line.strip().split()
+		psMap[pid] = ppid
+	return psMap
+
+def getOriginalPids(params):
+	i = 0
+	pids = set()
+	while i <= len(params) - 2:
+		if params[i] == '-p':
+			pids.add(params[i+1])
+			del params[i:i+2]
+		else:
+			i += 2
+	if not pids:
+		pids.add(str(os.getpid()))
+	return pids
+
+def main():
+	params = sys.argv[1:]
+	originPids = getOriginalPids(params)
+	# build pschain for every pid
+	psMap = buildPsMap()
+	chainMap = {}
+	pidSet = set()
+	pidKey = []
+	for p in originPids:
+		# if p is someone's parent, skip
+		if p in pidSet:
+			continue
+		chain = pschain(p, psMap)
+		# if someone is p's parent, delete
+		for k, v in chainMap.items():
+			if k in chain:
+				del chainMap[k]
+				pidKey.remove(k)
+		chainMap[p] = chain
+		for e in chain:
+			pidSet.add(e)
+		pidKey.append(p)
+	# concat pids
+	pids = []
+	for k in pidKey:
+		for e in chainMap[k]:
+			pids.append(e)
+	pidStr = ','.join(pids)
+	args = ['ps', '-p', pidStr] + params
+	if debug:
+		print "args =", args
+	subprocess.call(args)
+
+if __name__ == '__main__':
+	main()
