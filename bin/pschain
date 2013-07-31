@@ -23,15 +23,23 @@ def buildPsMap():
 	return psMap
 
 def getOriginalPids(params):
+	hasSelector = False
 	i = 0
 	pids = set()
 	while i <= len(params) - 2:
 		if params[i] == '-p':
+			hasSelector = True
 			pids.add(params[i+1])
+			del params[i:i+2]
+		elif params[i] == '-C':
+			hasSelector = True
+			ps = subprocess.Popen(['ps', '-o', 'pid='] + params[i:i+2], stdout=subprocess.PIPE)
+			for e in ps.stdout:
+				pids.add(e.strip())
 			del params[i:i+2]
 		else:
 			i += 2
-	if not pids:
+	if not hasSelector:
 		#pids.add(str(os.getpid()))
 		ps = subprocess.Popen(['ps', '-o', 'pid='], stdout=subprocess.PIPE)
 		for e in ps.stdout:
@@ -54,9 +62,9 @@ def main():
 			print "build pschain for pid:", p
 		# if p is someone's parent, skip
 		if p in pidSet:
-			print "%5s = skip..." % p
 			if debug:
-				continue
+				print "%5s = skip..." % p
+			continue
 		chain = pschain(p, psMap)
 		if debug:
 			print "%5s = %s" % (p, str(chain))
@@ -73,6 +81,9 @@ def main():
 	args = ['ps']
 	for k in pidKey:
 		args += ['-p', ','.join(chainMap[k])]
+	if not pidKey:
+		# TODO no process found
+		args += ['-p', '0x7fffffff']
 	args += params
 	if debug:
 		print "args =", args
