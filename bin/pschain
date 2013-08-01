@@ -58,7 +58,7 @@ def main():
 	pidSet = set()
 	pidKey = []
 	for p in originPids:
-		if debug:
+		if debug and False:
 			print "build pschain for pid:", p
 		# if p is someone's parent, skip
 		if p in pidSet:
@@ -86,7 +86,7 @@ def main():
 		args += ['-p', '0x7fffffff']
 	args += params
 	if debug:
-		print "args =", args
+		print " args =", args
 	subprocess.call(args)
 
 if __name__ == '__main__':
