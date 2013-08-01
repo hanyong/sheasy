@@ -38,7 +38,7 @@ def getOriginalPids(params):
 				pids.add(e.strip())
 			del params[i:i+2]
 		else:
-			i += 2
+			i += 1
 	if not hasSelector:
 		#pids.add(str(os.getpid()))
 		ps = subprocess.Popen(['ps', '-o', 'pid='], stdout=subprocess.PIPE)
