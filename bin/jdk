@@ -25,8 +25,8 @@ class Jdk:
 		self.argv = sys.argv[2:]
 		if not self.argv:
 			self.argv = ["bash"]
-		print "jdk version:", self.version
-		print "command:", self.argv
+		#print "jdk version:", self.version
+		#print "command:", self.argv
 
 	def main(self):
 		jdkGlob = Jdk.prefix + "jdk" + self.version + "*"
@@ -47,8 +47,8 @@ class Jdk:
 		os.environ[Jdk.pathKey] = newPath
 		if Jdk.home:
 			os.environ[Jdk.homeKey] = newHome
-		print "origin:\n%s=%s\n%s=%s" % (Jdk.homeKey, Jdk.home, Jdk.pathKey, path)
-		print "new:\n%s=%s\n%s=%s" % (Jdk.homeKey, newHome, Jdk.pathKey, newPath)
+		#print "origin:\n%s=%s\n%s=%s" % (Jdk.homeKey, Jdk.home, Jdk.pathKey, path)
+		#print "new:\n%s=%s\n%s=%s" % (Jdk.homeKey, newHome, Jdk.pathKey, newPath)
 		subprocess.check_call(self.argv)
 
 
