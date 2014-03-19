@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+"set jdk version to run command"
+
+import sys, os 
+import re
+import subprocess
+
+
+class Jdk:
+	prefix = "/opt/"
+	homePtn = re.compile(re.escape(os.path.pathsep) + r'?' 
+			+ re.escape(prefix) + r'jdk.*?' 
+			+ re.escape(os.path.sep) + r'bin')
+
+	def __init__(self):
+		try:
+			self.version = sys.argv[1]
+		except Exception as ex:
+			print ex
+			print "usage:", sys.argv[0], "<jdk-version>", "[cmd [arg...]]"
+			sys.exit(1)
+		self.argv = sys.argv[2:]
+		if not self.argv:
+			self.argv = ["bash"]
+		print "jdk version:", self.version
+		print "command:", self.argv
+
+	def main(self):
+		subprocess.check_call(self.argv)
+
+
+if __name__ == "__main__":
+	Jdk().main()
