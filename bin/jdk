@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 "set jdk version to run command"
 
-import sys, os 
+import sys, os, glob
 import re
 import subprocess
 
 
 class Jdk:
-	prefix = "/opt/"
-	homePtn = re.compile(re.escape(os.path.pathsep) + r'?' 
+	pathKey = "PATH"
+	homeKey = "JAVA_HOME"
+	home = homeKey in os.environ and os.environ[homeKey] or None
+	prefix = home and os.path.dirname(home) + os.path.sep or "/opt/"
+	binPtn = re.compile(re.escape(os.path.pathsep) + r'?' 
 			+ re.escape(prefix) + r'jdk.*?' 
 			+ re.escape(os.path.sep) + r'bin')
 
@@ -26,6 +29,26 @@ class Jdk:
 		print "command:", self.argv
 
 	def main(self):
+		jdkGlob = Jdk.prefix + "jdk" + self.version + "*"
+		jdkList = glob.glob(jdkGlob)
+		if not len(jdkList) == 1:
+			print "ERROR: non unique jdk path '%s': %s" % (jdkGlob, jdkList)
+			sys.exit(1)
+		(newHome,) = jdkList
+		path = os.environ[Jdk.pathKey]
+		match = Jdk.binPtn.search(path)
+		if match:
+			begin, end = match.start(), match.end()
+			if path[begin] == os.path.pathsep:
+				begin += 1
+			newPath = path[:begin] + newHome + os.path.sep + "bin" + path[end:]
+		else:
+			newPath = newHome + os.path.sep + "bin" + os.path.pathsep + path
+		os.environ[Jdk.pathKey] = newPath
+		if Jdk.home:
+			os.environ[Jdk.homeKey] = newHome
+		print "origin:\n%s=%s\n%s=%s" % (Jdk.homeKey, Jdk.home, Jdk.pathKey, path)
+		print "new:\n%s=%s\n%s=%s" % (Jdk.homeKey, newHome, Jdk.pathKey, newPath)
 		subprocess.check_call(self.argv)
 
 
