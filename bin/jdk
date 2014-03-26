@@ -45,8 +45,8 @@ class Jdk:
 		else:
 			newPath = newHome + os.path.sep + "bin" + os.path.pathsep + path
 		os.environ[Jdk.pathKey] = newPath
-		if Jdk.home:
-			os.environ[Jdk.homeKey] = newHome
+		# always set "JAVA_HOME"
+		os.environ[Jdk.homeKey] = newHome
 		#print "origin:\n%s=%s\n%s=%s" % (Jdk.homeKey, Jdk.home, Jdk.pathKey, path)
 		#print "new:\n%s=%s\n%s=%s" % (Jdk.homeKey, newHome, Jdk.pathKey, newPath)
 		subprocess.check_call(self.argv)
