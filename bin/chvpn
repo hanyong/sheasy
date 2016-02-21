@@ -36,16 +36,19 @@ def main():
 		row = line.split()
 		route[row[0]] = row
 	
-	if not route.has_key(VPN_PUB):
-		die("route for VPN_PUB: %s not found.\n%s" % (VPN_PUB, routeText))
-	if not route.has_key(VPN_PUB):
+	if not route.has_key(VPN_NET):
 		die("route for VPN_NET: %s not found.\n%s" % (VPN_NET, routeText))
 	if not route.has_key(NET_ALL):
 		die("route for NET_ALL: %s not found.\n%s" % (NET_ALL, routeText))
 	
-	vpnPubRoute = route[VPN_PUB]
-	defGw, defIf = vpnPubRoute[1], vpnPubRoute[-1]
 	vpnIf = route[VPN_NET][-1]
+	if route.has_key(VPN_PUB):
+		defRoute = route[VPN_PUB]
+	else:
+		defRoute = route[NET_ALL]
+	defGw, defIf = defRoute[1], defRoute[-1]
+	if vpnIf == defIf:
+		die("vpnIf and defIf can't be the same: %s" % vpnIf)
 	
 	if route[NET_ALL][-1] == vpnIf:
 		newGw, newIf = defGw, defIf
@@ -54,7 +57,9 @@ def main():
 		newGw, newIf = VPN_PRI, vpnIf
 		print "set VPN gw",
 	print newGw, newIf
-	
+
+	if not route.has_key(VPN_PUB):
+		subprocess.call(["route", "add", "-host", VPN_PUB, "gw", defGw, defIf])	
 	subprocess.call(["route", "del", "-net", NET_ALL])
 	subprocess.call(["route", "add", "-net", NET_ALL, "gw", newGw, newIf])
 #	subprocess.call(["route", "-n"])
