@@ -1,0 +1,63 @@
+#!/usr/bin/env python2
+'''
+automic change route gw between vpn gw and system default gw.
+'''
+import sys, os, subprocess
+
+def die(msg):
+	print "ERROR:", msg
+	sys.exit(1)
+
+def getenv(name, default):
+	try:
+		v = os.environ[name]
+	except:
+		v = default
+	return v.strip()
+
+def net24(ip):
+	n = len(ip) - 1
+	while n >= 0 and ip[n] != ".":
+		n -= 1
+	return ip[:n + 1] + "0"
+
+def main():
+	VPN_PUB = getenv("VPN_PUB", "47.88.85.167")
+	VPN_PRI = getenv("VPN_PRI", "192.168.8.1")
+	VPN_NET = getenv("VPN_NET", net24(VPN_PRI))
+	NET_ALL = "0.0.0.0"
+	
+	route = {}
+	routeText = subprocess.check_output(["route", "-n"]).strip()
+	for line in routeText.splitlines():
+		line = line.strip()
+		if not line or not line[0].isdigit():
+			continue
+		row = line.split()
+		route[row[0]] = row
+	
+	if not route.has_key(VPN_PUB):
+		die("route for VPN_PUB: %s not found.\n%s" % (VPN_PUB, routeText))
+	if not route.has_key(VPN_PUB):
+		die("route for VPN_NET: %s not found.\n%s" % (VPN_NET, routeText))
+	if not route.has_key(NET_ALL):
+		die("route for NET_ALL: %s not found.\n%s" % (NET_ALL, routeText))
+	
+	vpnPubRoute = route[VPN_PUB]
+	defGw, defIf = vpnPubRoute[1], vpnPubRoute[-1]
+	vpnIf = route[VPN_NET][-1]
+	
+	if route[NET_ALL][-1] == vpnIf:
+		newGw, newIf = defGw, defIf
+		print "set DEFAULT gw",
+	else:
+		newGw, newIf = VPN_PRI, vpnIf
+		print "set VPN gw",
+	print newGw, newIf
+	
+	subprocess.call(["route", "del", "-net", NET_ALL])
+	subprocess.call(["route", "add", "-net", NET_ALL, "gw", newGw, newIf])
+#	subprocess.call(["route", "-n"])
+	pass
+
+main()
