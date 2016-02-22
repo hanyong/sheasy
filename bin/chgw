@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 '''
-automic change route gw between vpn gw and system default gw.
+change default gw between system gw and vpn gw.
 '''
 import sys, os, subprocess
 
@@ -43,26 +43,49 @@ def main():
 	
 	vpnIf = route[VPN_NET][-1]
 	if route.has_key(VPN_PUB):
-		defRoute = route[VPN_PUB]
+		sysRoute = route[VPN_PUB]
 	else:
-		defRoute = route[NET_ALL]
-	defGw, defIf = defRoute[1], defRoute[-1]
-	if vpnIf == defIf:
-		die("vpnIf and defIf can't be the same: %s" % vpnIf)
+		sysRoute = route[NET_ALL]
+	sysGw, sysIf = sysRoute[1], sysRoute[-1]
+	if vpnIf == sysIf:
+		die("vpnIf and sysIf can't be the same: %s" % vpnIf)
+	curIf = route[NET_ALL][-1]
 	
-	if route[NET_ALL][-1] == vpnIf:
-		newGw, newIf = defGw, defIf
-		print "set DEFAULT gw",
+	# figure out the real action to do
+	action = ""
+	if len(sys.argv) > 1:
+		action = sys.argv[1]
+	if action == "ch":
+		if curIf != sysIf:
+			action = "sys"
+		else:
+			action = "vpn"
+	elif (action == "sys" and curIf == sysIf) or (action == "vpn" and curIf == vpnIf):
+		action = ""
+	
+	if action != "sys" and action != "vpn":
+		if curIf == vpnIf:
+			print "current is VPN gw", VPN_PRI, vpnIf
+		else:
+			print "current is SYS gw", sysGw, sysIf
 	else:
-		newGw, newIf = VPN_PRI, vpnIf
-		print "set VPN gw",
-	print newGw, newIf
-
-	if not route.has_key(VPN_PUB):
-		subprocess.call(["route", "add", "-host", VPN_PUB, "gw", defGw, defIf])	
-	subprocess.call(["route", "del", "-net", NET_ALL])
-	subprocess.call(["route", "add", "-net", NET_ALL, "gw", newGw, newIf])
-#	subprocess.call(["route", "-n"])
-	pass
+		if action == "sys":
+			newGw, newIf = sysGw, sysIf
+			print "set SYS gw",
+		else:
+			newGw, newIf = VPN_PRI, vpnIf
+			print "set VPN gw",
+		print newGw, newIf
+			
+		if not route.has_key(VPN_PUB):
+			subprocess.call(["route", "add", "-host", VPN_PUB, "gw", sysGw, sysIf])	
+		subprocess.call(["route", "del", "-net", NET_ALL])
+		subprocess.call(["route", "add", "-net", NET_ALL, "gw", newGw, newIf])
+		
+		if action == "vpn":
+			subprocess.call(["bash", "-c", "echo 'nameserver %s' | /sbin/resolvconf -a '%s.chgw'" % (VPN_PRI, vpnIf)])
+		elif action == "sys":
+			subprocess.call(["/sbin/resolvconf", "-d", "%s.chgw" % vpnIf])
+		#subprocess.call(["route", "-n"])
 
 main()
