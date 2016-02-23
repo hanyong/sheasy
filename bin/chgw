@@ -22,8 +22,8 @@ def net24(ip):
 	return ip[:n + 1] + "0"
 
 def main():
-	VPN_PUB = getenv("VPN_PUB", "47.88.85.167")
-	VPN_PRI = getenv("VPN_PRI", "192.168.8.1")
+	VPN_PUB = getenv("VPN_PUB", "121.42.46.16")
+	VPN_PRI = getenv("VPN_PRI", "192.168.20.3")
 	VPN_NET = getenv("VPN_NET", net24(VPN_PRI))
 	NET_ALL = "0.0.0.0"
 	
