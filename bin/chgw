@@ -54,31 +54,31 @@ def main():
 	if not route.has_key(NET_ALL):
 		die("route for NET_ALL: %s not found.\n%s" % (NET_ALL, routeText))
 	
-	vpnIf = route[VPN_NET][-1]
+	vpnGw, vpnIf = VPN_GW, route[VPN_NET][-1]
 	if route.has_key(VPN_PUB):
 		sysRoute = route[VPN_PUB]
 	else:
 		sysRoute = route[NET_ALL]
 	sysGw, sysIf = sysRoute[1], sysRoute[-1]
-	if sysGw == VPN_GW:
-		die("find sysIf error, get VPN_GW: %s" % VPN_GW)
-	curIf = route[NET_ALL][-1]
+	if sysGw == vpnGw:
+		die("find sysIf error, get vpnGw: %s" % vpnGw)
+	curGw = route[NET_ALL][1]
 	
 	# figure out the real action to do
 	action = ""
 	if len(sys.argv) > 1:
 		action = sys.argv[1]
 	if action == "ch":
-		if curIf != sysIf:
+		if curGw != sysGw:
 			action = "sys"
 		else:
 			action = "vpn"
-	elif (action == "sys" and curIf == sysIf) or (action == "vpn" and curIf == vpnIf):
+	elif (action == "sys" and curGw == sysGw) or (action == "vpn" and curGw == vpnGw):
 		action = ""
 	
 	if action != "sys" and action != "vpn":
-		if curIf == vpnIf:
-			print "current is VPN gw", VPN_GW, vpnIf
+		if curGw == vpnGw:
+			print "current is VPN gw", vpnGw, vpnIf
 		else:
 			print "current is SYS gw", sysGw, sysIf
 	else:
@@ -86,7 +86,7 @@ def main():
 			newGw, newIf = sysGw, sysIf
 			print "set SYS gw",
 		else:
-			newGw, newIf = VPN_GW, vpnIf
+			newGw, newIf = vpnGw, vpnIf
 			print "set VPN gw",
 		print newGw, newIf
 			
@@ -98,7 +98,7 @@ def main():
 		subprocess.call(["route", "add", "-net", NET_ALL, "gw", newGw, newIf])
 		
 		if action == "vpn":
-			subprocess.call(["bash", "-c", "echo 'nameserver %s' | /sbin/resolvconf -a '%s.chgw'" % (VPN_GW, vpnIf)])
+			subprocess.call(["bash", "-c", "echo 'nameserver %s' | /sbin/resolvconf -a '%s.chgw'" % (vpnGw, vpnIf)])
 		elif action == "sys":
 			subprocess.call(["/sbin/resolvconf", "-d", "%s.chgw" % vpnIf])
 		#subprocess.call(["route", "-n"])
