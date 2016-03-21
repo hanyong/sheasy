@@ -60,8 +60,8 @@ def main():
 	else:
 		sysRoute = route[NET_ALL]
 	sysGw, sysIf = sysRoute[1], sysRoute[-1]
-	if sysIf == vpnIf:
-		die("find sysIf error, get vpnIf: %s" % vpnIf)
+	if sysGw == VPN_GW:
+		die("find sysIf error, get VPN_GW: %s" % VPN_GW)
 	curIf = route[NET_ALL][-1]
 	
 	# figure out the real action to do
