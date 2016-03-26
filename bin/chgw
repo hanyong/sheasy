@@ -27,18 +27,22 @@ def main():
 	VPN_GW = getenv("VPN_GW", "192.168.1.5")
 	VPN_NET = getenv("VPN_NET", net24(VPN_GW))
 	NET_ALL = "0.0.0.0"
+	VPN_BYPASS_DOMAIN = [
+		"mirrors.ustc.edu.cn",
+		"us2.oolap.com",
+		"jp3.0bad.com",
+		"jp4.0bad.com",
+		"jp5.0bad.com",
+		]
 	VPN_BYPASS = [
 	    # syntax:
 	    # [ "-host", ip, ]
 	    # [ "-net", net, "netmask", mask, ]
 	    # vpn pub
 	    [ "-host", VPN_PUB, ],
-	    # mirrors.ustc.edu.cn
-	    ] + [
-	    [ "-host", e, ] for e in socket.gethostbyname_ex("mirrors.ustc.edu.cn")[2]
-	    ] + [
-	    #
 	    ]
+	for domain in VPN_BYPASS_DOMAIN:
+		VPN_BYPASS += [ [ "-host", e, ] for e in socket.gethostbyname_ex(domain)[2] ]
 
 	route = {}
 	routeText = subprocess.check_output(["route", "-n"]).strip()
