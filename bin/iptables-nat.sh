@@ -13,7 +13,7 @@ start() {
 	if [ "${code}" -eq 1 ] ; then
 		iptables -t nat -A "${RULE[@]}"
 	else
-		echo "${error}" >&2
+		[ -n "${error}" ] && echo "${error}" >&2
 		return "${code}"
 	fi
 }
