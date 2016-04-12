@@ -3,7 +3,7 @@
 ACTION="${1?}"
 shift
 
-NET="192.168.0.0/16"
+NET="${1}" && shift || NET="192.168.0.0/16"
 RULE=( POSTROUTING -s "${NET}" ! -d "${NET}" -j MASQUERADE )
 
 start() {
