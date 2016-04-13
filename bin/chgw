@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# vim: ts=4 sw=0 et!
+# vim: ts=4 sw=4 noet
 '''
 change default gw between system gw and vpn gw.
 '''
@@ -22,11 +22,7 @@ def net24(ip):
 		n -= 1
 	return ip[:n + 1] + "0"
 
-def main():
-	VPN_PUB = getenv("VPN_PUB", "121.42.46.16")
-	VPN_GW = getenv("VPN_GW", "192.168.1.5")
-	VPN_NET = getenv("VPN_NET", net24(VPN_GW))
-	NET_ALL = "0.0.0.0"
+def getBypassList():
 	VPN_BYPASS_DOMAIN = [
 		"cn.archive.ubuntu.com",
 		"mirrors.ustc.edu.cn",
@@ -35,6 +31,19 @@ def main():
 		"jp4.0bad.com",
 		"jp5.0bad.com",
 		]
+	VPN_BYPASS = [ ]
+	for domain in VPN_BYPASS_DOMAIN:
+		ipList = socket.gethostbyname_ex(domain)[2]
+		#ipList = []
+		print domain, "=>", ipList
+		VPN_BYPASS += [ [ "-host", e, ] for e in ipList ]
+	return VPN_BYPASS
+
+def main():
+	VPN_PUB = getenv("VPN_PUB", "121.42.46.16")
+	VPN_GW = getenv("VPN_GW", "192.168.1.5")
+	VPN_NET = getenv("VPN_NET", net24(VPN_GW))
+	NET_ALL = "0.0.0.0"
 	VPN_BYPASS = [
 	    # syntax:
 	    # [ "-host", ip, ]
@@ -42,8 +51,6 @@ def main():
 	    # vpn pub
 	    [ "-host", VPN_PUB, ],
 	    ]
-	for domain in VPN_BYPASS_DOMAIN:
-		VPN_BYPASS += [ [ "-host", e, ] for e in socket.gethostbyname_ex(domain)[2] ]
 
 	route = {}
 	routeText = subprocess.check_output(["route", "-n"]).strip()
@@ -94,7 +101,9 @@ def main():
 			newGw, newIf = vpnGw, vpnIf
 			print "set VPN gw",
 		print newGw, newIf
-			
+		
+		if not route.has_key(VPN_PUB):
+			VPN_BYPASS += getBypassList()
 		for e in VPN_BYPASS:
 			k = e[1]
 			if not route.has_key(k):
