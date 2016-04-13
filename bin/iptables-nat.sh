@@ -34,8 +34,11 @@ stop() {
 }
 
 case "${ACTION}" in
-start|status|stop)
+status)
 	"${ACTION}" "${@}"
+	;;
+start|stop)
+	"${ACTION}" "${@}" && status
 	;;
 *)
 	echo "unkown action: ${ACTION}"
