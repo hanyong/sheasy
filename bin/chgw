@@ -26,10 +26,9 @@ def getBypassList():
 	VPN_BYPASS_DOMAIN = [
 		"cn.archive.ubuntu.com",
 		"mirrors.ustc.edu.cn",
+		"us.oolap.com",
+		"us1.oolap.com",
 		"us2.oolap.com",
-		"jp3.0bad.com",
-		"jp4.0bad.com",
-		"jp5.0bad.com",
 		]
 	VPN_BYPASS = [ ]
 	for domain in VPN_BYPASS_DOMAIN:
@@ -41,7 +40,7 @@ def getBypassList():
 
 def main():
 	VPN_PUB = getenv("VPN_PUB", "121.42.46.16")
-	VPN_GW = getenv("VPN_GW", "192.168.1.5")
+	VPN_GW = getenv("VPN_GW", "192.168.1.6")
 	VPN_NET = getenv("VPN_NET", net24(VPN_GW))
 	NET_ALL = "0.0.0.0"
 	VPN_BYPASS = [
