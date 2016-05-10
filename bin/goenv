@@ -1,31 +1,19 @@
 #!/bin/bash
 set -e
 
+# search up to the directory which contains "src/"
+while test "${PWD}" != "/" && ! ls -d src/ >/dev/null 2>&1 ; do
+	cd ..
+done
+# ensure we found "src/"
+ls -d src/ >/dev/null 2>&1
+
 goenv_pwd="${PWD}"
-test -L "${goenv_pwd}" && goenv_pwd="$(cd "$(readlink "${goenv_pwd}")" && pwd -L)"
-goenv_path="$(cat "${goenv_pwd}/goenv.path")"
-: "${goenv_path:?}"
-goenv_dir="$(dirname "${goenv_path}")"
-goenv_name="$(basename "${goenv_path}")"
+goenv_pkg="$(find src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}" -ne 1 || ! ls -d "{}/${L[0]}/" >/dev/null 2>&1' \; -print | head -n 1)"
+: "${goenv_pkg:?}"
+test -e self && test "$(readlink self)" = "${goenv_pkg}" || ln -sf "${goenv_pkg}" self
+goenv_pkg="${goenv_pkg#src/}"
 
-mkdir -p "${goenv_pwd}".{self,vendor}/{,src,bin,pkg}
-
-mkdir -p "${goenv_pwd}.self/src/${goenv_dir}"
-(
-	cd "${goenv_pwd}.self/src/${goenv_dir}"
-	test -e "${goenv_name}" && test "$(readlink "${goenv_name}")" = "${goenv_pwd}" || ln -sf "${goenv_pwd}" "${goenv_name}"
-)
-
-export GOPATH="${goenv_pwd}".self
-goenv_addVendor=false
-if [ "${1}" != glide -a "${1}" != godep ] ; then
-	goenv_addVendor=true
-fi
-if [ "${1}" = godep -a "${2}" = save ] ; then
-	goenv_addVendor=true
-fi
-if "${goenv_addVendor}" ; then
-	GOPATH=$GOPATH:"${goenv_pwd}".vendor
-fi
-
-cd "${goenv_pwd}.self/src/${goenv_path}" && exec "${@}"
+export GOPATH="${goenv_pwd}":"${goenv_pwd}"/_vendor
+test "${#}" -gt 0 || set -- echo "GOPATH=$GOPATH"
+cd "${goenv_pwd}/src/${goenv_pkg}" && exec "${@}"
