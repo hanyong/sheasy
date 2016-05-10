@@ -2,7 +2,8 @@
 set -e
 
 goenv_pwd="${PWD}"
-source "${goenv_pwd}/goenv.sh"
+test -L "${goenv_pwd}" && goenv_pwd="$(cd "$(readlink "${goenv_pwd}")" && pwd -L)"
+goenv_path="$(cat "${goenv_pwd}/goenv.path")"
 : "${goenv_path:?}"
 goenv_dir="$(dirname "${goenv_path}")"
 goenv_name="$(basename "${goenv_path}")"
