@@ -11,14 +11,14 @@ goenv_name="$(basename "${goenv_path}")"
 mkdir -p "${goenv_pwd}".work/{_self,src,bin,pkg}
 (
 	cd "${goenv_pwd}".work/_self
-	for e in src bin pkg ; do
+	for e in bin pkg ; do
 		test -e "${e}" || ln -s ../"${e}"
 	done
 )
 
-mkdir -p "${goenv_pwd}.work/_self/${goenv_dir}"
+mkdir -p "${goenv_pwd}.work/_self/src/${goenv_dir}"
 (
-	cd "${goenv_pwd}.work/_self/${goenv_dir}"
+	cd "${goenv_pwd}.work/_self/src/${goenv_dir}"
 	test -e "${goenv_name}" && test "$(readlink "${goenv_name}")" = "${goenv_pwd}" || ln -sf "${goenv_pwd}" "${goenv_name}"
 )
 
