@@ -34,4 +34,4 @@ if "${goenv_addWork}" ; then
 	GOPATH=$GOPATH:"${goenv_pwd}".work
 fi
 
-cd "${goenv_pwd}.work/_self/${goenv_path}" && exec "${@}"
+cd "${goenv_pwd}.work/_self/src/${goenv_path}" && exec "${@}"
