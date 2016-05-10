@@ -8,30 +8,24 @@ goenv_path="$(cat "${goenv_pwd}/goenv.path")"
 goenv_dir="$(dirname "${goenv_path}")"
 goenv_name="$(basename "${goenv_path}")"
 
-mkdir -p "${goenv_pwd}".work/{_self,src,bin,pkg}
-(
-	cd "${goenv_pwd}".work/_self
-	for e in bin pkg ; do
-		test -e "${e}" || ln -s ../"${e}"
-	done
-)
+mkdir -p "${goenv_pwd}".{self,vendor}/{,src,bin,pkg}
 
-mkdir -p "${goenv_pwd}.work/_self/src/${goenv_dir}"
+mkdir -p "${goenv_pwd}.self/src/${goenv_dir}"
 (
-	cd "${goenv_pwd}.work/_self/src/${goenv_dir}"
+	cd "${goenv_pwd}.self/src/${goenv_dir}"
 	test -e "${goenv_name}" && test "$(readlink "${goenv_name}")" = "${goenv_pwd}" || ln -sf "${goenv_pwd}" "${goenv_name}"
 )
 
-export GOPATH="${goenv_pwd}".work/_self
-goenv_addWork=false
+export GOPATH="${goenv_pwd}".self
+goenv_addVendor=false
 if [ "${1}" != glide -a "${1}" != godep ] ; then
-	goenv_addWork=true
+	goenv_addVendor=true
 fi
 if [ "${1}" = godep -a "${2}" = save ] ; then
-	goenv_addWork=true
+	goenv_addVendor=true
 fi
-if "${goenv_addWork}" ; then
-	GOPATH=$GOPATH:"${goenv_pwd}".work
+if "${goenv_addVendor}" ; then
+	GOPATH=$GOPATH:"${goenv_pwd}".vendor
 fi
 
-cd "${goenv_pwd}.work/_self/src/${goenv_path}" && exec "${@}"
+cd "${goenv_pwd}.self/src/${goenv_path}" && exec "${@}"
