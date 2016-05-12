@@ -10,7 +10,7 @@ done
 # ensure we found "${goenv_vendor}"
 ls -d "${goenv_vendor}" >/dev/null 2>&1
 
-goenv_pwd="${PWD}"
+goenv_pwd="$(pwd -P)"
 goenv_pkg="$(find src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}" -ne 1 || ! ls -d "{}/${L[0]}/" >/dev/null 2>&1' \; -print | head -n 1)"
 : "${goenv_pkg:?}"
 test -e self && test "$(readlink self)" = "${goenv_pkg}" || ln -sf "${goenv_pkg}" self
