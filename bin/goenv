@@ -16,5 +16,12 @@ test -e self && test "$(readlink self)" = "${goenv_pkg}" || ln -sf "${goenv_pkg}
 goenv_pkg="${goenv_pkg#src/}"
 
 export GOPATH="${goenv_pwd}":"${goenv_pwd}"/_vendor
-test "${#}" -gt 0 || set -- echo "GOPATH=$GOPATH"
+
+cat >"${goenv_pwd}/env" <<EOF
+GOPATH="${GOPATH}"
+[ -n "\${goenv_old_PS1}" ] || goenv_old_PS1="\${PS1}"
+PS1="($(basename "${goenv_pkg}"))\${goenv_old_PS1}" 
+EOF
+
+#test "${#}" -gt 0 || set -- echo "GOPATH=$GOPATH"
 cd "${goenv_pwd}/src/${goenv_pkg}" && exec "${@}"
