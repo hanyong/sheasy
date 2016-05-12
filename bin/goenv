@@ -1,12 +1,13 @@
 #!/bin/bash
 set -e
 
-# search up to the directory which contains "src/"
-while test "${PWD}" != "/" && ! ls -d src/ >/dev/null 2>&1 ; do
+# search up to the directory which contains "${goenv_vendor}"
+goenv_vendor="_vendor/"
+while test "${PWD}" != "/" && ! ls -d "${goenv_vendor}" >/dev/null 2>&1 ; do
 	cd ..
 done
-# ensure we found "src/"
-ls -d src/ >/dev/null 2>&1
+# ensure we found "${goenv_vendor}"
+ls -d "${goenv_vendor}" >/dev/null 2>&1
 
 goenv_pwd="${PWD}"
 goenv_pkg="$(find src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}" -ne 1 || ! ls -d "{}/${L[0]}/" >/dev/null 2>&1' \; -print | head -n 1)"
