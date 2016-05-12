@@ -2,24 +2,27 @@
 set -e
 
 # search up to the directory which contains "${goenv_vendor}"
-goenv_vendor="_vendor/"
+goenv_vendor=".vendor"
 goenv_old_PWD="${PWD}"
-while test "${PWD}" != "/" && ! ls -d "${goenv_vendor}" >/dev/null 2>&1 ; do
-	cd ..
+while test "${PWD}" != "/" -a -z "${goenv_pwd}" ; do 
+	if ls -d "${PWD}${goenv_vendor}/" >/dev/null 2>&1 ; then
+		goenv_pwd="${PWD}"
+	elif [[ "${PWD}" = *"${goenv_vendor}" ]] && ls -d "${PWD%${goenv_vendor}}/" >/dev/null 2>&1 ; then
+		goenv_pwd="${PWD%${goenv_vendor}}"
+	else
+		cd ..
+	fi
 done
-# ensure we found "${goenv_vendor}"
-ls -d "${goenv_vendor}" >/dev/null 2>&1
-
-goenv_pwd="${PWD}"
+: "${goenv_pwd:?project dir not found}"
+cd "${goenv_pwd}${goenv_vendor}/self"
 goenv_pkg="$(find src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}" -ne 1 || ! ls -d "{}/${L[0]}/" >/dev/null 2>&1' \; -print | head -n 1)"
 : "${goenv_pkg:?}"
-test -e self && test "$(readlink self)" = "${goenv_pkg}" || ln -sf "${goenv_pkg}" self
 goenv_pkg="${goenv_pkg#src/}"
 cd "${goenv_old_PWD}"
 
-export GOPATH="${goenv_pwd}":"${goenv_pwd}"/_vendor
+export GOPATH="${goenv_pwd}${goenv_vendor}/self":"${goenv_pwd}${goenv_vendor}"
 
-cat >"${goenv_pwd}/env" <<EOF
+cat >"${goenv_pwd}/.goenv" <<EOF
 GOPATH=${GOPATH}
 [ -n "\${goenv_old_PS1}" ] || goenv_old_PS1="\${PS1}"
 PS1="($(basename "${goenv_pkg}"))\${goenv_old_PS1}" 
