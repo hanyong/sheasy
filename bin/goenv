@@ -3,6 +3,7 @@ set -e
 
 # search up to the directory which contains "${goenv_vendor}"
 goenv_vendor="_vendor/"
+goenv_old_PWD="${PWD}"
 while test "${PWD}" != "/" && ! ls -d "${goenv_vendor}" >/dev/null 2>&1 ; do
 	cd ..
 done
@@ -14,14 +15,16 @@ goenv_pkg="$(find src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}
 : "${goenv_pkg:?}"
 test -e self && test "$(readlink self)" = "${goenv_pkg}" || ln -sf "${goenv_pkg}" self
 goenv_pkg="${goenv_pkg#src/}"
+cd "${goenv_old_PWD}"
 
 export GOPATH="${goenv_pwd}":"${goenv_pwd}"/_vendor
 
 cat >"${goenv_pwd}/env" <<EOF
-GOPATH="${GOPATH}"
+GOPATH=${GOPATH}
 [ -n "\${goenv_old_PS1}" ] || goenv_old_PS1="\${PS1}"
 PS1="($(basename "${goenv_pkg}"))\${goenv_old_PS1}" 
 EOF
 
 #test "${#}" -gt 0 || set -- echo "GOPATH=$GOPATH"
-cd "${goenv_pwd}/src/${goenv_pkg}" && exec "${@}"
+#cd "${goenv_pwd}/src/${goenv_pkg}" && exec "${@}"
+exec "${@}"
