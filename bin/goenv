@@ -11,13 +11,13 @@ done
 ls -d "${goenv_vendor}" >/dev/null 2>&1
 
 goenv_pwd="$(pwd -P)"
-goenv_pkg="$(find src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}" -ne 1 || ! ls -d "{}/${L[0]}/" >/dev/null 2>&1' \; -print | head -n 1)"
+goenv_pkg="$(find _self/src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}" -ne 1 || ! ls -d "{}/${L[0]}/" >/dev/null 2>&1' \; -print | head -n 1)"
 : "${goenv_pkg:?}"
-test -e self && test "$(readlink self)" = "${goenv_pkg}" || ln -sf "${goenv_pkg}" self
-goenv_pkg="${goenv_pkg#src/}"
+test -e src && test "$(readlink src)" = "${goenv_pkg}" || ln -sfT "${goenv_pkg}" src
+goenv_pkg="${goenv_pkg#_self/src/}"
 cd "${goenv_old_PWD}"
 
-export GOPATH="${goenv_pwd}":"${goenv_pwd}"/_vendor
+export GOPATH="${goenv_pwd}"/_self:"${goenv_pwd}"/_vendor
 
 cat >"${goenv_pwd}/env" <<EOF
 GOPATH=${GOPATH}
