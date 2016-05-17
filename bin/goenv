@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 
-# search up to the directory which contains "${goenv_vendor}"
-goenv_vendor="_vendor/"
+# search up to the directory which contains "${goenv_mark}"
+goenv_mark="_self/"
 goenv_old_PWD="${PWD}"
-while test "${PWD}" != "/" && ! ls -d "${goenv_vendor}" >/dev/null 2>&1 ; do
+while test "${PWD}" != "/" && ! ls -d "${goenv_mark}" >/dev/null 2>&1 ; do
 	cd ..
 done
-# ensure we found "${goenv_vendor}"
-ls -d "${goenv_vendor}" >/dev/null 2>&1
+# ensure we found "${goenv_mark}"
+ls -d "${goenv_mark}" >/dev/null 2>&1
 
 goenv_pwd="$(pwd -P)"
 goenv_pkg="$(find _self/src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}" -ne 1 || ! ls -d "{}/${L[0]}/" >/dev/null 2>&1' \; -print | head -n 1)"
