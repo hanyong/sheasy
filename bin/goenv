@@ -27,4 +27,4 @@ EOF
 
 #test "${#}" -gt 0 || set -- echo "GOPATH=$GOPATH"
 #cd "${goenv_pwd}/src/${goenv_pkg}" && exec "${@}"
-exec "${@}"
+cd "$(pwd -P)" && exec "${@}"
