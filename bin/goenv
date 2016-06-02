@@ -2,27 +2,31 @@
 set -e
 
 # search up to the directory which contains "${goenv_mark}"
-goenv_mark="_self/"
+goenv_mark=".go/"
 goenv_old_PWD="${PWD}"
-while test "${PWD}" != "/" && ! ls -d "${goenv_mark}" >/dev/null 2>&1 ; do
+while test "${PWD}" != "/" && ! ls -d "${PWD%${goenv_mark%/}}${goenv_mark}" >/dev/null 2>&1 ; do
 	cd ..
 done
 # ensure we found "${goenv_mark}"
-ls -d "${goenv_mark}" >/dev/null 2>&1
+cd "${PWD%${goenv_mark%/}}${goenv_mark}"
 
 goenv_pwd="$(pwd -P)"
-goenv_pkg="$(find _self/src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}" -ne 1 || ! ls -d "{}/${L[0]}/" >/dev/null 2>&1' \; -print | head -n 1)"
+goenv_pkg="$(find src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}" -ne 1 || ! ls -d "{}/${L[0]}/" >/dev/null 2>&1' \; -print | head -n 1)"
 : "${goenv_pkg:?}"
-test -e src && test "$(readlink src)" = "${goenv_pkg}" || ln -sfT "${goenv_pkg}" src
-goenv_pkg="${goenv_pkg#_self/src/}"
+(
+	src="$(basename "${goenv_pwd}")/${goenv_pkg}"
+	dst="${goenv_pwd%${goenv_mark%/}}"
+	test -e "${dst}" && test "$(readlink "${dst}")" = "${src}" || ln -sfT "${src}" "${dst}"
+)
+goenv_pkg="${goenv_pkg#src/}"
 cd "${goenv_old_PWD}"
 
-export GOPATH="${goenv_pwd}"/_self:"${goenv_pwd}"/_vendor
+export GOPATH="${goenv_pwd}":"${goenv_pwd}"/_vendor
 
 cat >"${goenv_pwd}/env" <<EOF
 GOPATH=${GOPATH}
-[ -n "\${goenv_old_PS1}" ] || goenv_old_PS1="\${PS1}"
-PS1="($(basename "${goenv_pkg}"))\${goenv_old_PS1}" 
+#[ -n "\${goenv_old_PS1}" ] || goenv_old_PS1="\${PS1}"
+#PS1="($(basename "${goenv_pkg}"))\${goenv_old_PS1}" 
 EOF
 
 #test "${#}" -gt 0 || set -- echo "GOPATH=$GOPATH"
