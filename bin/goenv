@@ -21,7 +21,11 @@ goenv_pkg="$(find src/ -type d -exec bash -c 'L=( $(ls -A {}) ) ; test "${#L[@]}
 goenv_pkg="${goenv_pkg#src/}"
 cd "${goenv_old_PWD}"
 
-export GOPATH="${goenv_pwd}":"${goenv_pwd}"/_vendor
+GOPATH="${goenv_pwd}"
+if [ -d "${goenv_pwd}/_vendor" ] ; then
+	GOPATH="${GOPATH}:${goenv_pwd}/_vendor"
+fi
+export GOPATH
 
 cat >"${goenv_pwd}/env" <<EOF
 GOPATH=${GOPATH}
