@@ -23,7 +23,7 @@ cd "${goenv_old_PWD}"
 
 GOPATH="${goenv_pwd}"
 if [ -d "${goenv_pwd}/_vendor" ] ; then
-	GOPATH="${GOPATH}:${goenv_pwd}/_vendor"
+	GOPATH="${goenv_pwd}/_vendor:${GOPATH}"
 fi
 export GOPATH
 
