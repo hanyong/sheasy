@@ -14,6 +14,8 @@ setup() {
 	# socks5 server and other white list
 	iptables -t nat -A REDSOCKS -d 47.88.103.233,45.32.95.209
 	iptables -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports 12345
+	# TODO: REDIRECT 与 DNAT 的区别?
+	#iptables -t nat -A REDSOCKS -p tcp -j DNAT --to-destination 127.0.0.1:12345
 	)
 }
 
