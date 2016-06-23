@@ -20,20 +20,8 @@ setup() {
 }
 
 status() {
-	local err
-	iptables -t nat -C "${RULE[@]}"
-	err="${?}"
-	if [ "${err}" -eq 0 ] ; then
-		echo "REDSOCKS is ENABLED"
-	elif [ "${err}" -eq 1 ] ; then
-		echo "REDSOCKS is DISABLED"
-	fi
-	return "${err}"
-}
-
-start() {
-	# check and setup chain REDSOCKS
 	local msg err
+	# check and setup chain REDSOCKS
 	# 0: exists, 1: not exists, other: other error
 	msg="$(iptables -t nat -n -L REDSOCKS 2>&1)"
 	err="${?}"
@@ -49,9 +37,23 @@ start() {
 			return "${err}"
 	esac
 	if ! [ "${err}" -eq 0 ] ; then
+		# "1" meas status DISABLED, use other code for other error
+		[ "${err}" -eq 1 ] && err=3
 		return "${err}"
 	fi
 
+	iptables -t nat -C "${RULE[@]}"
+	err="${?}"
+	if [ "${err}" -eq 0 ] ; then
+		echo "REDSOCKS is ENABLED"
+	elif [ "${err}" -eq 1 ] ; then
+		echo "REDSOCKS is DISABLED"
+	fi
+	return "${err}"
+}
+
+start() {
+	local msg err
 	msg="$(status 2>&1)"
 	err="${?}"
 	if [ "${err}" -eq 1 ] ; then
