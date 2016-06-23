@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# cd "$(pwd -P)" first
+cd "$(pwd -P)"
+
 # search up to the directory which contains "${goenv_mark}"
 goenv_mark=".go/"
 goenv_old_PWD="${PWD}"
@@ -33,6 +36,4 @@ GOPATH=${GOPATH}
 #PS1="($(basename "${goenv_pkg}"))\${goenv_old_PS1}" 
 EOF
 
-#test "${#}" -gt 0 || set -- echo "GOPATH=$GOPATH"
-#cd "${goenv_pwd}/src/${goenv_pkg}" && exec "${@}"
-cd "$(pwd -P)" && exec "${@}"
+exec "${@}"
