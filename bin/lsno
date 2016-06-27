@@ -1,0 +1,9 @@
+#!/bin/bash
+# 列出当前目录文件, 但排除参数列表指定的文件
+
+a=( find -maxdepth 1 -name . )
+for e in "${@}" ; do
+	a=( "${a[@]}" -o -name "${e}" )
+done
+a=( "${a[@]}" -o -print )
+exec "${a[@]}"
