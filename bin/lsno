@@ -3,7 +3,8 @@
 
 a=( find -maxdepth 1 -name . )
 for e in "${@}" ; do
-	a=( "${a[@]}" -o -name "${e}" )
+	# basename transform ".git/" or "./.git/" to "git"
+	a=( "${a[@]}" -o -name "$(basename "${e}")" )
 done
 a=( "${a[@]}" -o -print )
 exec "${a[@]}"
