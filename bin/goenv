@@ -5,7 +5,7 @@ set -e
 cd "$(pwd -P)"
 
 # search up to the directory which contains "${goenv_mark}"
-goenv_mark=".go/"
+goenv_mark=".ws/"
 goenv_old_PWD="${PWD}"
 while test "${PWD}" != "/" && ! ls -d "${PWD%${goenv_mark%/}}${goenv_mark}" >/dev/null 2>&1 ; do
 	cd ..
