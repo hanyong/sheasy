@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+PRUN_FILE="${1:?}"
+shift
+
+PRUN_LIST="$(cat "${PRUN_FILE}")"
+for e in ${PRUN_LIST} ; do
+	eval "${@}"
+done
