@@ -4,7 +4,7 @@ set -e
 PRUN_FILE="${1:?}"
 shift
 
-PRUN_LIST="$(cat "${PRUN_FILE}")"
+PRUN_LIST="$(cat "${PRUN_FILE}" | grep -Pv '^\#')"
 for e in ${PRUN_LIST} ; do
 	eval "${@}"
 done
