@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# 将 tar 解压命令和文件 tar 包合并到输入输出流,
+# 将此流作为 bash 的输入, bash 将调用 tar 命令恢复文件本身.
+#
+# 将此流重定向到 ssh, 即可利用输入输出流将本地文件拷贝到远程机器.
+# intar a.* | ssh -T ahost
+#
+# 远程机器文件拷贝到本地可直接用:
+# echo tar c 'a.*' | ssh -T ahost | tar c
+# 直接用 tar 不要求远程有 intar 脚本, 并且更灵活.
+# 等价于:
+# echo intar 'a.*' | ssh -T ahost | bash
+#
+# 此流去掉第一行, 即为 tar 包自身:
+# intar a.* | tail -n +2 | tar t
+
+cat <(echo tar x) <(tar c "${@}")
