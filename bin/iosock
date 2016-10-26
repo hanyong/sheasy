@@ -1,0 +1,7 @@
+#!/bin/bash
+# use ssh stdio for TCP socket communicate
+SSH_HOST="${1:?}"
+RHOST="${2?}"
+RPORT="${3?}"
+LPORT="${4?}"
+exec socat TCP4-LISTEN:"${LPORT}",reuseaddr,fork SYSTEM:"exec bash -c "\\\''cat <(echo set -e "&&" nc '"${RHOST}"' '"${RPORT}"') - | ssh -T '"${SSH_HOST}"''\\\',nofork
